@@ -1,0 +1,120 @@
+# URL Shortener
+
+A production-oriented Django URL shortener service with a REST API for creating short links, redirecting them, and collecting click statistics.
+
+## Features
+
+- Create short links from long URLs
+- Redirect short codes to their original destinations
+- Track click activity and basic analytics
+- Expose API endpoints for shorten, redirect, and stats operations
+- Include a simple landing page for the web UI
+
+## Tech Stack
+
+- Python 3.11+
+- Django
+- Django REST Framework
+- MySQL
+- python-decouple
+
+## Project Structure
+
+- config/ — Django project settings and URL configuration
+- shortener/ — URL shortening app with models, services, views, serializers, and templates
+
+## Local Development
+
+1. Create and activate a virtual environment
+
+   ```bash
+   python -m venv venv
+   .\venv\Scripts\activate
+   ```
+
+2. Install dependencies
+
+   ```bash
+   pip install django djangorestframework python-decouple mysqlclient
+   ```
+
+3. Create a local environment file
+
+   Create a `.env` file in the project root with values such as:
+
+   ```env
+   SECRET_KEY=change-me
+   DB_NAME=url_shortener
+   DB_USER=root
+   DB_PASSWORD=your-password
+   DB_HOST=localhost
+   DB_PORT=3306
+   BASE_URL=http://localhost:8000
+   ```
+
+4. Run database migrations
+
+   ```bash
+   python manage.py migrate
+   ```
+
+5. Start the development server
+
+   ```bash
+   python manage.py runserver
+   ```
+
+6. Open the app in your browser at http://localhost:8000/
+
+## API Endpoints
+
+- POST /api/shorten — create a short URL
+- GET /api/stats/<short_code> — fetch click statistics
+- GET /<short_code> — redirect to the original URL
+
+## Testing
+
+Run the test suite with:
+
+```bash
+python manage.py test shortener.tests
+```
+
+## Production-Ready Plan
+
+The project is structured for production readiness with the following checklist:
+
+### 1. Environment-based configuration
+- Store secrets and database settings in environment variables.
+- Never commit real credentials to source control.
+
+### 2. Secure deployment settings
+- Set `DEBUG=False` in production.
+- Restrict `ALLOWED_HOSTS` to your real domain names.
+- Use a strong `SECRET_KEY` and HTTPS everywhere.
+
+### 3. Database and persistence
+- Use a managed MySQL or PostgreSQL service in production.
+- Keep database backups and monitor storage growth.
+
+### 4. Reliability and operations
+- Run the app behind a production WSGI server such as Gunicorn.
+- Place the app behind a reverse proxy such as Nginx.
+- Configure logging, monitoring, and alerting.
+
+### 5. Security hardening
+- Add rate limiting for the shorten endpoint.
+- Validate and sanitize user input thoroughly.
+- Consider CAPTCHA or abuse protection for public-facing endpoints.
+
+### 6. Scalability
+- Add caching for redirect lookups and stats queries.
+- Introduce background tasks for analytics processing if traffic grows.
+- Use a CDN or edge caching for static assets.
+
+## Next Steps
+
+- Add authentication for admin-only actions.
+- Add rate limiting and abuse protection.
+- Add Docker support for easier deployment.
+- Add CI/CD pipelines for automated testing and deployment.

@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SHORTWIRE — Dispatch Office</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Special+Elite&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap');
+
+  :root {
+    --ink: #10151c;
+    --ink-2: #171e29;
+    --ink-3: #1e2733;
+    --paper: #e9e3d0;
+    --paper-dim: #d9d2bc;
+    --brass: #c1974a;
+    --brass-dark: #8f6c2e;
+    --brass-bright: #d8ab5f;
+    --green: #5fa776;
+    --rust: #b15a42;
+    --text-hi: #f3efe4;
+    --text-mid: #a9b0be;
+    --text-ink: #1b1f27;
+    --line: rgba(243, 239, 228, 0.12);
+
+    --font-display: 'Special Elite', 'Courier New', monospace;
+    --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-mono: 'IBM Plex Mono', 'Consolas', monospace;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--ink);
+    color: var(--text-hi);
+    font-family: var(--font-body);
+  }
+
+  body {
+    background-image:
+      radial-gradient(circle at 15% 0%, rgba(193, 151, 74, 0.07), transparent 45%),
+      radial-gradient(circle at 85% 100%, rgba(95, 167, 118, 0.05), transparent 40%);
+    min-height: 100vh;
+  }
+
+  a { color: var(--brass-bright); }
+
+  :focus-visible {
+    outline: 2px solid var(--brass-bright);
+    outline-offset: 2px;
+  }
+
+  .app {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 28px 20px 64px;
+  }
+
+  /* ---------- Topbar ---------- */
+  .topbar {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 18px;
+    margin-bottom: 8px;
+  }
+
+  .wordmark {
+    font-family: var(--font-display);
+    font-size: 20px;
+    letter-spacing: 2px;
+    color: var(--text-hi);
+  }
+
+  .wordmark span { color: var(--brass-bright); }
+
+  .tagline {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-mid);
+    letter-spacing: 1px;
+    margin-top: 4px;
+  }
+
+  /* ---------- Hero ---------- */
+  .hero { padding: 40px 0 28px; }
+
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: var(--brass-bright);
+    margin-bottom: 10px;
+  }
+
+  h1 {
+    font-family: var(--font-display);
+    font-size: clamp(24px, 4.5vw, 34px);
+    line-height: 1.35;
+    margin: 0 0 12px;
+    color: var(--text-hi);
+    font-weight: 400;
+  }
+
+  .hero p {
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--text-mid);
+    max-width: 52ch;
+    margin: 0;
+  }
+
+  /* ---------- Server address memo ---------- */
+  .memo {
+    margin-top: 24px;
+    border: 1px solid var(--line);
+    background: var(--ink-2);
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .memo label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 1px;
+    color: var(--text-mid);
+    white-space: nowrap;
+  }
+
+  .memo input {
+    flex: 1;
+    min-width: 200px;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--line);
+    color: var(--text-hi);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    padding: 4px 2px;
+  }
+
+  .memo input:focus { border-bottom-color: var(--brass-bright); }
+
+  .status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--text-mid);
+    flex-shrink: 0;
+  }
+  .status-dot.ok { background: var(--green); }
+  .status-dot.fail { background: var(--rust); }
+
+  details.help {
+    margin-top: 10px;
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    color: var(--text-mid);
+  }
+  details.help summary { cursor: pointer; color: var(--brass-bright); }
+  details.help div { margin-top: 8px; line-height: 1.6; }
+  details.help code {
+    background: var(--ink-3);
+    padding: 1px 5px;
+    border-radius: 2px;
+    color: var(--text-hi);
+  }
+
+  /* ---------- Tabs ---------- */
+  .tabs {
+    display: flex;
+    gap: 2px;
+    margin: 32px 0 0;
+  }
+
+  .tab {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 1.5px;
+    padding: 10px 18px;
+    background: var(--ink-2);
+    color: var(--text-mid);
+    border: 1px solid var(--line);
+    border-bottom: none;
+    cursor: pointer;
+  }
+
+  .tab.active {
+    background: var(--ink-3);
+    color: var(--brass-bright);
+  }
+
+  .panel {
+    border: 1px solid var(--line);
+    background: var(--ink-3);
+    padding: 28px 24px;
+  }
+
+  /* ---------- Form ---------- */
+  .field { margin-bottom: 18px; }
+
+  .field label {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    color: var(--text-mid);
+    margin-bottom: 8px;
+  }
+
+  .field input {
+    width: 100%;
+    background: var(--ink-2);
+    border: 1px solid var(--line);
+    color: var(--text-hi);
+    font-family: var(--font-mono);
+    font-size: 14px;
+    padding: 12px 14px;
+  }
+
+  .field input:focus { border-color: var(--brass-bright); }
+
+  .btn {
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    letter-spacing: 1.5px;
+    background: var(--brass);
+    color: var(--text-ink);
+    border: none;
+    padding: 12px 22px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: transform 0.1s ease, background 0.15s ease;
+  }
+
+  .btn:hover { background: var(--brass-bright); }
+  .btn:active { transform: translateY(1px); }
+  .btn:disabled { background: var(--paper-dim); color: var(--text-mid); cursor: not-allowed; }
+
+  .btn.ghost {
+    background: transparent;
+    border: 1px solid var(--brass);
+    color: var(--brass-bright);
+  }
+  .btn.ghost:hover { background: rgba(193, 151, 74, 0.1); }
+
+  .msg {
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    letter-spacing: 0.5px;
+    padding: 10px 14px;
+    margin-top: 16px;
+    border-left: 3px solid var(--rust);
+    background: rgba(177, 90, 66, 0.1);
+    color: #e3b6a6;
+  }
+
+  /* ---------- Ticket ---------- */
+  .ticket {
+    position: relative;
+    background: var(--paper);
+    color: var(--text-ink);
+    padding: 24px 24px 20px;
+    margin-top: 24px;
+    border-top: 3px dashed var(--paper-dim);
+    border-bottom: 3px dashed var(--paper-dim);
+  }
+
+  .stamp {
+    position: absolute;
+    top: 14px;
+    right: 18px;
+    border: 2px solid var(--brass-dark);
+    color: var(--brass-dark);
+    border-radius: 50%;
+    width: 64px;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-display);
+    font-size: 10px;
+    letter-spacing: 1px;
+    transform: rotate(-14deg);
+    text-align: center;
+    opacity: 0.85;
+  }
+
+  .ticket .code-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--brass-dark);
+    margin-bottom: 6px;
+  }
+
+  .ticket .code {
+    font-family: var(--font-display);
+    font-size: 30px;
+    letter-spacing: 2px;
+    margin-bottom: 14px;
+    word-break: break-all;
+  }
+
+  .ticket .divider {
+    border-top: 1px solid var(--paper-dim);
+    margin: 14px 0;
+  }
+
+  .ticket .short-url {
+    font-family: var(--font-mono);
+    font-size: 13.5px;
+    word-break: break-all;
+    margin-bottom: 16px;
+  }
+
+  .ticket .actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .ticket .actions .btn.ghost {
+    border-color: var(--brass-dark);
+    color: var(--brass-dark);
+    background: transparent;
+  }
+  .ticket .actions .btn.ghost:hover { background: rgba(143, 108, 46, 0.12); }
+
+  .ticket .stop-line {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    letter-spacing: 1px;
+    color: var(--brass-dark);
+    margin-top: 16px;
+    opacity: 0.85;
+  }
+
+  /* ---------- History ---------- */
+  .history { margin-top: 32px; }
+
+  .history h3 {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: var(--text-mid);
+    margin: 0 0 12px;
+    font-weight: 400;
+  }
+
+  .history-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--line);
+    font-family: var(--font-mono);
+    font-size: 12px;
+  }
+
+  .history-row .long {
+    color: var(--text-mid);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex: 1;
+  }
+
+  .history-row .code { color: var(--brass-bright); flex-shrink: 0; }
+
+  /* ---------- Stats / Log panel ---------- */
+  .stat-block { margin-top: 28px; }
+
+  .stat-total {
+    text-align: center;
+    padding: 20px 0 28px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .stat-total .num {
+    font-family: var(--font-display);
+    font-size: 48px;
+    color: var(--brass-bright);
+    line-height: 1;
+  }
+
+  .stat-total .label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: var(--text-mid);
+    margin-top: 8px;
+  }
+
+  .stat-section { margin-top: 28px; }
+
+  .stat-section h4 {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: var(--text-mid);
+    font-weight: 400;
+    margin: 0 0 16px;
+  }
+
+  .bars {
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+    height: 120px;
+    padding: 0 4px;
+  }
+
+  .bar-col {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 100%;
+    justify-content: flex-end;
+  }
+
+  .bar {
+    width: 100%;
+    max-width: 28px;
+    background: var(--brass);
+    min-height: 3px;
+  }
+
+  .bar-day {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    color: var(--text-mid);
+    margin-top: 8px;
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    white-space: nowrap;
+  }
+
+  .manifest-row {
+    display: grid;
+    grid-template-columns: 28px 1fr auto;
+    gap: 12px;
+    align-items: center;
+    padding: 9px 0;
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    position: relative;
+  }
+
+  .manifest-row .idx { color: var(--brass-bright); }
+  .manifest-row .ref { color: var(--text-hi); z-index: 1; }
+  .manifest-row .cnt { color: var(--text-mid); z-index: 1; }
+
+  .manifest-bar-bg {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    background: rgba(193, 151, 74, 0.08);
+    z-index: 0;
+  }
+
+  .empty-note {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--text-mid);
+    padding: 8px 0;
+  }
+
+  footer {
+    margin-top: 48px;
+    padding-top: 18px;
+    border-top: 1px solid var(--line);
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    color: var(--text-mid);
+    letter-spacing: 0.5px;
+  }
+
+  @media (max-width: 520px) {
+    .panel { padding: 22px 16px; }
+    .stamp { width: 52px; height: 52px; font-size: 9px; }
+    .ticket .code { font-size: 24px; }
+    .memo { flex-direction: column; align-items: stretch; }
+  }
+</style>
+</head>
+<body>
+  <div class="app">
+    <div class="topbar">
+      <div>
+        <div class="wordmark">SHORT<span>WIRE</span></div>
+        <div class="tagline">URL DISPATCH OFFICE</div>
+      </div>
+    </div>
+
+    <section class="hero">
+      <div class="eyebrow">// COMPRESS AN ADDRESS</div>
+      <h1>Send a long address.<br />Receive a short one.</h1>
+      <p>Every link routed through this office is logged, timestamped, and ready to report back on request.</p>
+
+      <div class="memo">
+        <span id="status-dot" class="status-dot"></span>
+        <label for="api-base">SERVER ADDRESS</label>
+        <input id="api-base" type="text" value="" placeholder="leave blank if served by Django" spellcheck="false" />
+      </div>
+      <details class="help">
+        <summary>Getting a network error?</summary>
+        <div>
+          If Django is serving this page (the normal setup), leave SERVER ADDRESS blank — requests
+          go to the same origin and no CORS setup is needed. Only fill in an address (e.g.
+          <code>http://localhost:8000</code>) if you opened this file directly from disk or are
+          hosting it somewhere else — in that case install <code>django-cors-headers</code>, add it
+          to <code>INSTALLED_APPS</code> and <code>MIDDLEWARE</code>, and set
+          <code>CORS_ALLOW_ALL_ORIGINS = True</code> in your dev settings.
+        </div>
+      </details>
+    </section>
+
+    <div class="tabs">
+      <button class="tab active" data-tab="dispatch">DISPATCH</button>
+      <button class="tab" data-tab="log">LOG</button>
+    </div>
+
+    <!-- DISPATCH PANEL -->
+    <section class="panel" id="panel-dispatch">
+      <form id="dispatch-form">
+        <div class="field">
+          <label for="long-url">LONG ADDRESS</label>
+          <input id="long-url" type="text" placeholder="https://example.com/a/very/long/path" autocomplete="off" />
+        </div>
+        <button class="btn" id="dispatch-btn" type="submit">DISPATCH ▸</button>
+      </form>
+
+      <div id="dispatch-error"></div>
+      <div id="ticket-wrap"></div>
+
+      <div class="history" id="history-wrap" hidden>
+        <h3>RECENT DISPATCHES — THIS SESSION</h3>
+        <div id="history-list"></div>
+      </div>
+    </section>
+
+    <!-- LOG PANEL -->
+    <section class="panel" id="panel-log" hidden>
+      <form id="log-form">
+        <div class="field">
+          <label for="track-code">SHORT CODE</label>
+          <input id="track-code" type="text" placeholder="e.g. 21" autocomplete="off" />
+        </div>
+        <button class="btn" id="log-btn" type="submit">PULL LOG ▸</button>
+      </form>
+
+      <div id="log-error"></div>
+      <div id="stats-wrap"></div>
+    </section>
+
+    <footer>
+      SHORTWIRE — a reference UI for the /api/shorten, /:shortCode, and /api/stats/:shortCode endpoints.
+    </footer>
+  </div>
+
+<script>
+(function () {
+  'use strict';
+
+  const $ = (sel) => document.querySelector(sel);
+
+  const apiBaseInput = $('#api-base');
+  const statusDot = $('#status-dot');
+
+  const tabs = document.querySelectorAll('.tab');
+  const panelDispatch = $('#panel-dispatch');
+  const panelLog = $('#panel-log');
+
+  tabs.forEach((tab) => {
+    tab.addEventListener('click', () => activateTab(tab.dataset.tab));
+  });
+
+  function activateTab(name) {
+    tabs.forEach((t) => t.classList.toggle('active', t.dataset.tab === name));
+    panelDispatch.hidden = name !== 'dispatch';
+    panelLog.hidden = name !== 'log';
+  }
+
+  function setStatus(ok) {
+    statusDot.classList.remove('ok', 'fail');
+    statusDot.classList.add(ok ? 'ok' : 'fail');
+  }
+
+  function getApiBase() {
+    return apiBaseInput.value.trim().replace(/\/+$/, '');
+  }
+
+  function showError(container, text) {
+    container.innerHTML = '';
+    const div = document.createElement('div');
+    div.className = 'msg';
+    div.textContent = text;
+    container.appendChild(div);
+  }
+
+  function clearError(container) {
+    container.innerHTML = '';
+  }
+
+  // ---------------- DISPATCH ----------------
+
+  const dispatchForm = $('#dispatch-form');
+  const longUrlInput = $('#long-url');
+  const dispatchBtn = $('#dispatch-btn');
+  const dispatchError = $('#dispatch-error');
+  const ticketWrap = $('#ticket-wrap');
+  const historyWrap = $('#history-wrap');
+  const historyList = $('#history-list');
+
+  const history = [];
+
+  dispatchForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    clearError(dispatchError);
+    ticketWrap.innerHTML = '';
+
+    const longUrl = longUrlInput.value.trim();
+    if (!longUrl) {
+      showError(dispatchError, 'ADDRESS REQUIRED STOP');
+      return;
+    }
+
+    dispatchBtn.disabled = true;
+    dispatchBtn.textContent = 'SENDING…';
+
+    try {
+      const res = await fetch(getApiBase() + '/api/shorten', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ longUrl }),
+      });
+
+      if (res.status === 201) {
+        const data = await res.json();
+        setStatus(true);
+        renderTicket(data);
+        history.unshift({ code: data.shortCode, longUrl });
+        renderHistory();
+        longUrlInput.value = '';
+      } else if (res.status === 422) {
+        setStatus(true);
+        const data = await res.json().catch(() => ({}));
+        showError(dispatchError, (data.error || 'ADDRESS REJECTED — NOT A VALID URL') + ' STOP');
+      } else if (res.status === 400) {
+        setStatus(true);
+        showError(dispatchError, 'MESSAGE MALFORMED STOP CHECK YOUR REQUEST STOP');
+      } else {
+        setStatus(true);
+        showError(dispatchError, 'SERVER REPLIED WITH ' + res.status + ' STOP');
+      }
+    } catch (err) {
+      setStatus(false);
+      showError(dispatchError, 'WIRE DOWN STOP COULD NOT REACH ' + getApiBase() + ' STOP');
+    } finally {
+      dispatchBtn.disabled = false;
+      dispatchBtn.textContent = 'DISPATCH ▸';
+    }
+  });
+
+  function renderTicket(data) {
+    const ticket = document.createElement('div');
+    ticket.className = 'ticket';
+    ticket.innerHTML = `
+      <div class="stamp">ISSUED</div>
+      <div class="code-label">SHORT CODE</div>
+      <div class="code"></div>
+      <div class="divider"></div>
+      <div class="short-url"></div>
+      <div class="actions">
+        <a class="btn" target="_blank" rel="noopener" href="${data.shortUrl}">VISIT ↗</a>
+        <button class="btn ghost" data-action="copy">COPY LINK</button>
+        <button class="btn ghost" data-action="track">TRACK THIS WIRE →</button>
+      </div>
+      <div class="stop-line">LINK RECEIVED STOP CODE ISSUED STOP</div>
+    `;
+    ticket.querySelector('.code').textContent = data.shortCode;
+    ticket.querySelector('.short-url').textContent = data.shortUrl;
+
+    ticket.querySelector('[data-action="copy"]').addEventListener('click', (e) => {
+      navigator.clipboard.writeText(data.shortUrl).then(() => {
+        const btn = e.currentTarget;
+        const original = btn.textContent;
+        btn.textContent = 'COPIED';
+        setTimeout(() => { btn.textContent = original; }, 1400);
+      }).catch(() => {});
+    });
+
+    ticket.querySelector('[data-action="track"]').addEventListener('click', () => {
+      activateTab('log');
+      $('#track-code').value = data.shortCode;
+      logForm.dispatchEvent(new Event('submit'));
+    });
+
+    ticketWrap.innerHTML = '';
+    ticketWrap.appendChild(ticket);
+  }
+
+  function renderHistory() {
+    if (history.length === 0) {
+      historyWrap.hidden = true;
+      return;
+    }
+    historyWrap.hidden = false;
+    historyList.innerHTML = '';
+    history.slice(0, 8).forEach((item) => {
+      const row = document.createElement('div');
+      row.className = 'history-row';
+      const longSpan = document.createElement('span');
+      longSpan.className = 'long';
+      longSpan.textContent = item.longUrl;
+      const codeSpan = document.createElement('span');
+      codeSpan.className = 'code';
+      codeSpan.textContent = item.code;
+      row.appendChild(longSpan);
+      row.appendChild(codeSpan);
+      historyList.appendChild(row);
+    });
+  }
+
+  // ---------------- LOG / STATS ----------------
+
+  const logForm = $('#log-form');
+  const trackCodeInput = $('#track-code');
+  const logBtn = $('#log-btn');
+  const logError = $('#log-error');
+  const statsWrap = $('#stats-wrap');
+
+  logForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    clearError(logError);
+    statsWrap.innerHTML = '';
+
+    const code = trackCodeInput.value.trim().replace(/^\/+/, '');
+    if (!code) {
+      showError(logError, 'CODE REQUIRED STOP');
+      return;
+    }
+
+    logBtn.disabled = true;
+    logBtn.textContent = 'PULLING…';
+
+    try {
+      const res = await fetch(getApiBase() + '/api/stats/' + encodeURIComponent(code));
+
+      if (res.status === 200) {
+        const data = await res.json();
+        setStatus(true);
+        renderStats(data);
+      } else if (res.status === 404) {
+        setStatus(true);
+        showError(logError, 'NO RECORD FOUND FOR THAT CODE STOP');
+      } else {
+        setStatus(true);
+        showError(logError, 'SERVER REPLIED WITH ' + res.status + ' STOP');
+      }
+    } catch (err) {
+      setStatus(false);
+      showError(logError, 'WIRE DOWN STOP COULD NOT REACH ' + getApiBase() + ' STOP');
+    } finally {
+      logBtn.disabled = false;
+      logBtn.textContent = 'PULL LOG ▸';
+    }
+  });
+
+  function renderStats(data) {
+    const wrap = document.createElement('div');
+    wrap.className = 'stat-block';
+
+    // total
+    const total = document.createElement('div');
+    total.className = 'stat-total';
+    total.innerHTML = `<div class="num">${data.totalClicks ?? 0}</div><div class="label">SIGNALS RECEIVED — CODE ${data.shortCode ?? ''}</div>`;
+    wrap.appendChild(total);
+
+    // clicks per day
+    const perDay = document.createElement('div');
+    perDay.className = 'stat-section';
+    const days = Array.isArray(data.clicksPerDay) ? data.clicksPerDay : [];
+    if (days.length === 0) {
+      perDay.innerHTML = '<h4>DAILY TRAFFIC</h4><div class="empty-note">No pulses recorded yet.</div>';
+    } else {
+      const max = Math.max(...days.map((d) => d.count || 0), 1);
+      const barsHtml = days.map((d) => {
+        const pct = Math.max(4, Math.round(((d.count || 0) / max) * 100));
+        const label = String(d.day || '').slice(5); // MM-DD
+        return `<div class="bar-col"><div class="bar" style="height:${pct}%" title="${d.count} clicks"></div><div class="bar-day">${label}</div></div>`;
+      }).join('');
+      perDay.innerHTML = `<h4>DAILY TRAFFIC</h4><div class="bars">${barsHtml}</div>`;
+    }
+    wrap.appendChild(perDay);
+
+    // referrers
+    const refs = document.createElement('div');
+    refs.className = 'stat-section';
+    const referrers = Array.isArray(data.topReferrers) ? data.topReferrers : [];
+    if (referrers.length === 0) {
+      refs.innerHTML = '<h4>ROUTED FROM</h4><div class="empty-note">No referrer data yet.</div>';
+    } else {
+      const maxCount = Math.max(...referrers.map((r) => r.count || 0), 1);
+      const rows = referrers.map((r, i) => {
+        const pct = Math.round(((r.count || 0) / maxCount) * 100);
+        const idx = String(i + 1).padStart(2, '0');
+        const label = r.referrer || 'direct / none';
+        return `<div class="manifest-row"><div class="manifest-bar-bg" style="width:${pct}%"></div><span class="idx">${idx}</span><span class="ref"></span><span class="cnt">${r.count}</span></div>`;
+      });
+      refs.innerHTML = '<h4>ROUTED FROM</h4>' + rows.join('');
+      // safely set referrer text (avoid innerHTML injection)
+      const refEls = refs.querySelectorAll('.ref');
+      referrers.forEach((r, i) => { refEls[i].textContent = r.referrer || 'direct / none'; });
+    }
+    wrap.appendChild(refs);
+
+    statsWrap.innerHTML = '';
+    statsWrap.appendChild(wrap);
+  }
+})();
+</script>
+</body>
+</html>
